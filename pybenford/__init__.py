@@ -8,4 +8,4 @@ __version__ = "0.1.0"
 __license__ = "BSD 3-Clause License"
 
 
-from .pybenford import *
+from .benford import *
