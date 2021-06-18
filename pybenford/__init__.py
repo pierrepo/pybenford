@@ -1,6 +1,4 @@
-"""
-This library offers various statistics for Benford's law analysis
-"""
+"""This library offers various statistics for Benford's law analysis."""
 
 __authors__ = ("William Amory", "Pierre Poulain")
 __email__ = "pierre.poulain@u-paris.fr"
