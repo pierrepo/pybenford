@@ -1,10 +1,8 @@
 name: pybenford
 # channels priority
-# see https://bioconda.github.io/
-# conda-forge has highest priority
+# conda-forge has the highest priority
 channels:
   - defaults
-  - bioconda
   - conda-forge
 dependencies:
   # pybenford
@@ -12,9 +10,9 @@ dependencies:
   - pip:
     - -r file:../requirements.txt
     - sphinx-book-theme
-  # Jupyter lab and visualisation
-  - matplotlib
+  # Jupyter lab and visualization
   - jupyterlab
+  - matplotlib
   # Tests
   - pytest
   # Lint
