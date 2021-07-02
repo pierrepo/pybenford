@@ -89,6 +89,126 @@ def numbers(request):
     return request.param
 
 
+@pytest.fixture(params=[1, 2])
+def digit_pos(request):
+    """Return positional digit in number"""
+    return request.param
+
+
+def test_count_digit(nb_digit, digit_pos, numbers):
+    """
+    Test if distribution of digits of observed data is correct for
+    positif index (digit_pos) in number.
+    """
+    # Setup
+    correct_digit_distrib = [[np.array([1, 2, 1, 2, 0, 1, 2, 1, 0]),
+                              np.array([0, 1, 0, 1, 4, 0, 0, 2, 2])],
+                             [np.array([0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0,
+                                        0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+                                        0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1,
+                                        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                        0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0,
+                                        0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0,
+                                        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]),
+                              np.array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 
+                                        0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0,
+                                        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                        0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0,
+                                        0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0])]]
+
+    
+    # Exercise
+    current_digit_distrib = ben.count_digit(numbers, nb_digit, digit_pos,base=10)
+    
+    # Verify
+    assert_array_almost_equal(current_digit_distrib,
+                              correct_digit_distrib[nb_digit-1][digit_pos-1])
+
+    # Cleanup - none
+
+
+@pytest.fixture(params=[-3, -2])
+def digit_neg(request):
+    """Return positional digit in number"""
+    return request.param
+
+
+def test_count_digit2(nb_digit, digit_neg, numbers):
+    """
+    Test if distribution of digits of observed data is correct for
+    positif index (digit_pos) in number.
+    """
+    # Setup
+    correct_digit_distrib = [[np.array([0, 1, 0, 1, 0, 0, 1, 2, 0]),
+                              np.array([1, 1, 1, 3, 1, 1, 0, 0, 2])],
+                             [np.array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                        0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0,
+                                        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]),
+                              np.array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                        0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0,
+                                        0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0,
+                                        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                        0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0])]]
+
+    
+    # Exercise
+    current_digit_distrib = ben.count_digit(numbers, nb_digit, digit_neg,
+                                            base=10)
+    
+    # Verify
+    assert_array_almost_equal(current_digit_distrib,
+                              correct_digit_distrib[nb_digit-1][digit_neg+3])
+
+    # Cleanup - None
+
+
+@pytest.fixture(params=[8, 5])
+def basis(request):
+    """Return the mathematical bases."""
+    return request.param
+
+
+@pytest.fixture(params=[[12, 421, 144, 3142, 24, 22, 41, 104, 401, 34],
+                        [-12, -421, -144, -3142, -24, -22, -41, -104, -401, -34],
+                        [0.0000012, 0.421, 1.44, 31.42, 0.024, 2.2, 0.0000041,
+                         0.01040, 4.01, 0.0000000000000034],
+                        [-0.0000012, -0.421, -1.44, -31.42, -0.024, -2.2,
+                         -0.0000041, -0.01040, -4.01, -0.0000000000000034]])
+def numbers2(request):
+    """Return the list of numbers."""
+    return request.param
+
+
+def test_count_digit3(basis, digit_pos, numbers2):
+    """
+    Test if distribution of digits of observed data is correct for
+    mathematical basis 8 and 5.
+    """
+    # Setup
+    correct_digit_distrib = [[np.array([3, 2, 2, 3, 0, 0, 0]),
+                              np.array([2, 3, 0, 3, 0, 0, 2])],
+                             [np.array([3, 2, 2, 3]),
+                              np.array([2, 3, 0, 5])]]
+
+    
+    # Exercise
+    current_digit_distrib = ben.count_digit(numbers2, 1, digit_pos, basis)
+    
+    # Verify
+    assert_array_almost_equal(current_digit_distrib,
+                              correct_digit_distrib[basis%2][digit_pos-1])
+
+    # Cleanup - None
+
+
 def test_count_first_digit(nb_digit, numbers):
     """
     Test if distribution of the first significant digits of observed

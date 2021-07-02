@@ -35,6 +35,69 @@ def get_theoretical_freq_benford(nb_digit=1, base=10):
     return p_benford
 
 
+def count_digit(numbers, nb_digit=1, digit=1, base=10):
+    """Distribution of the digits of observed data.
+
+    Function to return the observed distribution of the first digits
+    in base 10 of an observed data set. This function removes numbers
+    less than 1.
+
+    Parameters
+    ¯¯¯¯¯¯¯¯¯¯
+    numbers : array of numbers
+        Integer array.
+    nb_digit : int
+        Number of first significant digits. Default is `1`.
+    digit : int
+        Desired digit. default is `1`.
+    base : int
+        Mathematical basis of observed data. Default is `10`.
+
+    Returns
+    ¯¯¯¯¯¯¯
+    digit_distrib : array
+        Distribution of the first digits.
+
+    """
+    size_array = (base ** nb_digit) - (base ** (nb_digit - 1))
+    # array size return
+    digit_distrib = np.zeros(size_array, dtype=int)
+    for number in numbers:
+        number = abs(number)
+
+        if type(number) == float:
+            if number <= 9e-5:
+                number = str(number)
+                i = 0
+                nb_string = ""
+                while number[i] != 'e':
+                    nb_string += number[i]
+                    i += 1
+                number = nb_string
+            number = str(number)
+            number = number.replace(".", "")
+            number = number.strip("0")  # remove not-significant 0.
+
+        if int(number) >= (base ** (nb_digit - 1)):
+            number = str(number)
+            if len(number) < nb_digit+(abs(digit)-1):
+                continue
+            if digit < 0:
+                if abs(digit) < nb_digit:
+                    continue
+                if digit+nb_digit == 0:
+                    first = int(number[digit:])
+                else:
+                    first = int(number[digit:digit+nb_digit])
+            else:
+                first = int(number[digit-1:(digit-1)+nb_digit])
+            digit_distrib[first - (base ** (nb_digit - 1))] += 1
+
+    # nb_delet = (1 - (sum(digit_distrib)/len(numbers))) * 100
+    # print(f" Warning : {nb_delet:.2f}% of numbers remove")
+    return digit_distrib
+
+
 def count_first_digit(numbers, nb_digit=1):
     """Distribution of the first digits in base 10 of observed data.
 
@@ -55,30 +118,7 @@ def count_first_digit(numbers, nb_digit=1):
         Distribution of the first digits in base 10.
 
     """
-    size_array = (10 ** nb_digit) - (10 ** (nb_digit - 1))
-    # array size return
-    digit_distrib = np.zeros(size_array, dtype=int)
-    for number in numbers:
-        number = abs(number)
-        if type(number) == float:
-            if number <= 9e-5:
-                number = str(number)
-                i = 0
-                nb_string = ""
-                while number[i] != 'e':
-                    nb_string += number[i]
-                    i += 1
-                number = nb_string
-            number = str(number)
-            number = number.replace(".", "")
-            number = number.strip("0")  # remove not-significant 0.
-        if int(number) >= (10 ** (nb_digit - 1)):
-            number = str(number)
-            first = int(number[0:nb_digit])
-            digit_distrib[first - (10 ** (nb_digit - 1))] += 1
-
-    # nb_delet = (1 - (sum(digit_distrib)/len(numbers))) * 100
-    # print(f" Warning : {nb_delet:.2f}% of numbers remove")
+    digit_distrib = count_digit(numbers, nb_digit=nb_digit, digit=1, base=10)
     return digit_distrib
 
 
