@@ -8,7 +8,7 @@ from scipy.stats import distributions, power_divergence
 np.random.seed(2021)  # Random seed
 
 
-def get_theoretical_freq_benford(nb_digit=1, base=10):
+def get_theoretical_freq_benford(digit_nb=1, base=10):
     """Theoretical proportions of Benford's law.
 
     Function to return the theoretical proportion of the first
@@ -16,7 +16,7 @@ def get_theoretical_freq_benford(nb_digit=1, base=10):
 
     Parameters
     ¯¯¯¯¯¯¯¯¯¯
-    nb_digit : int
+    digit_nb : int
         Number of first digits to consider. Default is `1`.
     base : int
         Mathematical bassis. Default is `10`.
@@ -27,15 +27,15 @@ def get_theoretical_freq_benford(nb_digit=1, base=10):
         Theoretical proportion of the first digits considered.
 
     """
-    digit = (base ** nb_digit) - (base ** (nb_digit - 1))
+    digit = (base ** digit_nb) - (base ** (digit_nb - 1))
     p_benford = np.zeros(digit, dtype=float)
     for i in range(digit):
-        p_benford[i] = (math.log((1 + (1 / (i + (base ** (nb_digit - 1))))),
+        p_benford[i] = (math.log((1 + (1 / (i + (base ** (digit_nb - 1))))),
                                  base))
     return p_benford
 
 
-def count_digit(numbers, nb_digit=1, digit=1, base=10):
+def count_digit(numbers, digit_nb=1, digit_pos=1, base=10):
     """Distribution of the digits of observed data.
 
     Function to return the observed distribution of the first digits
@@ -46,9 +46,9 @@ def count_digit(numbers, nb_digit=1, digit=1, base=10):
     ¯¯¯¯¯¯¯¯¯¯
     numbers : array of numbers
         Integer array.
-    nb_digit : int
+    digit_nb : int
         Number of first significant digits. Default is `1`.
-    digit : int
+    digit_pos : int
         Desired digit. default is `1`.
     base : int
         Mathematical basis of observed data. Default is `10`.
@@ -59,46 +59,33 @@ def count_digit(numbers, nb_digit=1, digit=1, base=10):
         Distribution of the first digits.
 
     """
-    size_array = (base ** nb_digit) - (base ** (nb_digit - 1))
     # array size return
+    size_array = (base ** digit_nb) - (base ** (digit_nb - 1))
     digit_distrib = np.zeros(size_array, dtype=int)
     for number in numbers:
-        number = abs(number)
+        number = int(abs(number))
 
-        if type(number) == float:
-            if number <= 9e-5:
-                number = str(number)
-                i = 0
-                nb_string = ""
-                while number[i] != 'e':
-                    nb_string += number[i]
-                    i += 1
-                number = nb_string
+        if int(number) >= (base ** (digit_nb - 1)):
             number = str(number)
-            number = number.replace(".", "")
-            number = number.strip("0")  # remove not-significant 0.
-
-        if int(number) >= (base ** (nb_digit - 1)):
-            number = str(number)
-            if len(number) < nb_digit+(abs(digit)-1):
+            if len(number) < digit_nb+(abs(digit_pos)-1):
                 continue
-            if digit < 0:
-                if abs(digit) < nb_digit:
+            if digit_pos < 0:
+                if abs(digit_pos) < digit_nb:
                     continue
-                if digit+nb_digit == 0:
-                    first = int(number[digit:])
+                if digit_pos+digit_nb == 0:
+                    first = int(number[digit_pos:])
                 else:
-                    first = int(number[digit:digit+nb_digit])
+                    first = int(number[digit_pos:digit_pos+digit_nb])
             else:
-                first = int(number[digit-1:(digit-1)+nb_digit])
-            digit_distrib[first - (base ** (nb_digit - 1))] += 1
+                first = int(number[digit_pos-1:(digit_pos-1)+digit_nb])
+            digit_distrib[first - (base ** (digit_nb - 1))] += 1
 
     # nb_delet = (1 - (sum(digit_distrib)/len(numbers))) * 100
     # print(f" Warning : {nb_delet:.2f}% of numbers remove")
     return digit_distrib
 
 
-def count_first_digit(numbers, nb_digit=1):
+def count_first_digit(numbers, digit_nb=1):
     """Distribution of the first digits in base 10 of observed data.
 
     Function to return the observed distribution of the first digits
@@ -109,7 +96,7 @@ def count_first_digit(numbers, nb_digit=1):
     ¯¯¯¯¯¯¯¯¯¯
     numbers : array of numbers
         Integer array.
-    nb_digit : int
+    digit_nb : int
         Number of first significant digits.
 
     Returns
@@ -118,7 +105,8 @@ def count_first_digit(numbers, nb_digit=1):
         Distribution of the first digits in base 10.
 
     """
-    digit_distrib = count_digit(numbers, nb_digit=nb_digit, digit=1, base=10)
+    digit_distrib = count_digit(numbers, digit_nb=digit_nb, digit_pos=1,
+                                base=10)
     return digit_distrib
 
 
@@ -399,7 +387,7 @@ def chi2_test(data_obs, f_theo, nb_digit=1):
     Returns
     ¯¯¯¯¯¯¯
     chi2 : float
-        statistics of chisquare test.
+        Statistics of chisquare test.
     p_avl : float
         p-value of chi2.
 
@@ -428,7 +416,7 @@ def g_test(data_obs, f_theo, nb_digit=1):
     Returns
     ¯¯¯¯¯¯¯
     g : float
-        statistics of G-test.
+        Statistics of G-test.
     p_avl : float
         p-value of chi2.
 
@@ -442,7 +430,45 @@ def g_test(data_obs, f_theo, nb_digit=1):
     return g_stat, p_val
 
 
-def calculate_bootstrap_chi2(data_obs, f_theo, nb_digit, nb_val=1000,
+def ks_test(f_obs, f_theo, sample_size):
+    """Kolmogorov-Smirnov test.
+
+    Function performing a K-S test of compliance to Benford law.
+
+    Parameters
+    ¯¯¯¯¯¯¯¯¯¯
+    f_obs : array of float
+        Float array of observed proportion.
+    f_theo : array of float
+        Float array of theoretical proportion.
+    sample_size : int
+        Sample size of observed dataset.
+
+    Returns
+    ¯¯¯¯¯¯¯
+    max_diff : float
+        Value of K-S test.
+    ks_crit : float
+        Critical value of K-S test.
+
+    """
+    # get cumulative density fonction
+    cdf_obs = np.cumsum(f_obs)
+    cdf_theo = np.cumsum(f_theo)
+    # calculate absolute difference
+    arr_diff_abs = np.abs(cdf_obs - cdf_theo)
+    # get max difference
+    max_diff = max(arr_diff_abs)
+    # calculate critical value
+    ks_crit = 1.36/(np.sqrt(sample_size))
+    if max_diff < ks_crit:
+        print("Comform to Benford law, for alpha risk = 5%\n")
+    else:
+        print("Not conform to Benford law, for alpha risk = 5%\n")
+    return max_diff, ks_crit
+
+
+def calculate_bootstrap_chi2(data_obs, f_theo, digit_nb, nb_val=1000,
                              nb_loop=1000, type_test=1):
     """Average of calculated chi2 and asociate p_value.
 
@@ -452,9 +478,9 @@ def calculate_bootstrap_chi2(data_obs, f_theo, nb_digit, nb_val=1000,
     ¯¯¯¯¯¯¯¯¯¯
     data_obs : array of int
         Integer array of observed dataset.
-    f_theo : array of float-80.72309844128006
+    f_theo : array of float
         Float array of theoretical frequency.
-    nb_digit: int
+    digit_nb: int
         Number of first significant digits. Default is `1`.
     nb_val : int, optinal
         Sample size. Default is `1000`.
@@ -481,7 +507,7 @@ def calculate_bootstrap_chi2(data_obs, f_theo, nb_digit, nb_val=1000,
     d_theo = np.array(f_theo * nb_val)
     for i in range(nb_loop):
         ech = np.random.choice(data_obs, size=nb_val, replace=False)
-        d_obs = count_first_digit(ech, nb_digit)
+        d_obs = count_first_digit(ech, digit_nb)
         result = power_divergence(f_obs=d_obs, f_exp=d_theo,
                                   lambda_=type_test)
         sum_chi2[i] = result[0]
@@ -491,6 +517,58 @@ def calculate_bootstrap_chi2(data_obs, f_theo, nb_digit, nb_val=1000,
     p_val = distributions.chi2.sf(mean_chi2, k - 1)
     print(f"statistics : {mean_chi2} ; p-value : {p_val}")
     return mean_chi2, p_val
+
+
+def calculate_bootstrap_ks(data_obs, f_theo, digit_nb, nb_val=1000,
+                           nb_loop=1000):
+    """Kolmogorov-Smirnov bootstrap test.
+
+    Function performing a K-S test for large sample size.
+
+    Parameters
+    ¯¯¯¯¯¯¯¯¯¯
+    data_obs : array of int
+        Integer array of observed dataset.
+    f_theo : array of float
+        Float array of theoretical frequency.
+    digit_nb: int
+        Number of first significant digits. Default is `1`.
+    nb_val : int, optinal
+        Sample size. Default is `1000`.
+    nb_loop : int, optional
+        number of "bootstrap" procedure is performed.
+        Default is `1000`.
+
+    Returns
+    ¯¯¯¯¯¯¯
+    mean_ks : float
+        K-S average values of K-S test.
+    ks_crit : float
+        Critical value of K-S test.
+
+    """
+    sum_max_diff = np.zeros(nb_loop, dtype=float)
+    for i in range(nb_loop):
+        ech = np.random.choice(data_obs, size=nb_val, replace=False)
+        # get sample probability density fonction
+        f_obs = normalize_first_digit(count_first_digit(ech, digit_nb))
+        # get cumulative density fonction
+        cdf_obs = np.cumsum(f_obs)
+        cdf_theo = np.cumsum(f_theo)
+        # calculate absolute difference
+        arr_diff_abs = np.abs(cdf_obs - cdf_theo)
+        # get max difference
+        sum_max_diff[i] = max(arr_diff_abs)
+
+    # calculate critical value
+    ks_crit = 1.36/(np.sqrt(nb_loop))
+    # calculate mean of max_diff
+    mean_ks = sum(sum_max_diff) / nb_loop
+    if mean_ks < ks_crit:
+        print("Comform to Benford law, for alpha risk = 5%\n")
+    else:
+        print("Not conform to Benford law, for alpha risk = 5%\n")
+    return mean_ks, ks_crit
 
 
 if __name__ == "__main__":
