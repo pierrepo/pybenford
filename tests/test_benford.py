@@ -7,7 +7,7 @@ import pybenford as ben
 
 
 @pytest.fixture(params=[1, 2])
-def nb_digit(request):
+def digit_nb(request):
     """Return the number of digits."""
     return request.param
 
@@ -18,7 +18,7 @@ def base(request):
     return request.param
 
 
-def test_get_theoretical_freq_benford(base, nb_digit):
+def test_get_theoretical_freq_benford(base, digit_nb):
     """
     Test if theoretical proportion of the first digits considered is
     correct.
@@ -68,10 +68,10 @@ def test_get_theoretical_freq_benford(base, nb_digit):
                                      0.02644378, 0.02536413])]]
 
     # Exercise
-    current_freq_digit = ben.get_theoretical_freq_benford(nb_digit, base)
+    current_freq_digit = ben.get_theoretical_freq_benford(digit_nb, base)
 
     # Verify
-    assert_array_almost_equal(correct_freq_digit[base % 2][nb_digit - 1],
+    assert_array_almost_equal(correct_freq_digit[base % 2][digit_nb - 1],
                               current_freq_digit, 5)
 
     # Cleanup - None
@@ -79,11 +79,7 @@ def test_get_theoretical_freq_benford(base, nb_digit):
 
 @pytest.fixture(params=[[12, 458, 846, 7845, 25, 65, 48, 708, 201, 35],
                         [-12, -458, -846, -7845, -25, -65, -48, -708,
-                         -201, -35],
-                        [0.0000012, 0.458, 8.46, 78.45, 0.025, 6.5, 0.0000048,
-                         0.07080, 2.01, 0.0000000000000035],
-                        [-0.0000012, -0.458, -8.46, -78.45, -0.025, -6.5,
-                         -0.0000048, -0.07080, -2.01, -0.0000000000000035]])
+                         -201, -35]])
 def numbers(request):
     """Return the list of numbers."""
     return request.param
@@ -95,7 +91,7 @@ def digit_pos(request):
     return request.param
 
 
-def test_count_digit(nb_digit, digit_pos, numbers):
+def test_count_digit(digit_nb, digit_pos, numbers):
     """
     Test if distribution of digits of observed data is correct for
     positif index (digit_pos) in number.
@@ -120,11 +116,12 @@ def test_count_digit(nb_digit, digit_pos, numbers):
 
     
     # Exercise
-    current_digit_distrib = ben.count_digit(numbers, nb_digit, digit_pos,base=10)
+    current_digit_distrib = ben.count_digit(numbers, digit_nb, digit_pos,
+                                            base=10)
     
     # Verify
     assert_array_almost_equal(current_digit_distrib,
-                              correct_digit_distrib[nb_digit-1][digit_pos-1])
+                              correct_digit_distrib[digit_nb-1][digit_pos-1])
 
     # Cleanup - none
 
@@ -135,10 +132,10 @@ def digit_neg(request):
     return request.param
 
 
-def test_count_digit2(nb_digit, digit_neg, numbers):
+def test_count_digit2(digit_nb, digit_neg, numbers):
     """
     Test if distribution of digits of observed data is correct for
-    positif index (digit_pos) in number.
+    negatif index (digit_neg) in number.
     """
     # Setup
     correct_digit_distrib = [[np.array([0, 1, 0, 1, 0, 0, 1, 2, 0]),
@@ -160,12 +157,12 @@ def test_count_digit2(nb_digit, digit_neg, numbers):
 
     
     # Exercise
-    current_digit_distrib = ben.count_digit(numbers, nb_digit, digit_neg,
+    current_digit_distrib = ben.count_digit(numbers, digit_nb, digit_neg,
                                             base=10)
     
     # Verify
     assert_array_almost_equal(current_digit_distrib,
-                              correct_digit_distrib[nb_digit-1][digit_neg+3])
+                              correct_digit_distrib[digit_nb-1][digit_neg+3])
 
     # Cleanup - None
 
@@ -177,11 +174,8 @@ def basis(request):
 
 
 @pytest.fixture(params=[[12, 421, 144, 3142, 24, 22, 41, 104, 401, 34],
-                        [-12, -421, -144, -3142, -24, -22, -41, -104, -401, -34],
-                        [0.0000012, 0.421, 1.44, 31.42, 0.024, 2.2, 0.0000041,
-                         0.01040, 4.01, 0.0000000000000034],
-                        [-0.0000012, -0.421, -1.44, -31.42, -0.024, -2.2,
-                         -0.0000041, -0.01040, -4.01, -0.0000000000000034]])
+                        [-12, -421, -144, -3142, -24, -22, -41, -104, -401,
+                         -34]])
 def numbers2(request):
     """Return the list of numbers."""
     return request.param
@@ -209,7 +203,7 @@ def test_count_digit3(basis, digit_pos, numbers2):
     # Cleanup - None
 
 
-def test_count_first_digit(nb_digit, numbers):
+def test_count_first_digit(digit_nb, numbers):
     """
     Test if distribution of the first significant digits of observed
     data is correct.
@@ -227,11 +221,11 @@ def test_count_first_digit(nb_digit, numbers):
                                      0, 0, 0, 0, 0, 0, 0, 0, 0, 0])]
 
     # Exercise
-    current_first_digit = ben.count_first_digit(numbers, nb_digit)
+    current_first_digit = ben.count_first_digit(numbers, digit_nb)
 
     # Verify
     assert_array_almost_equal(current_first_digit,
-                              correct_first_digit[nb_digit-1])
+                              correct_first_digit[digit_nb-1])
 
     # Cleanup - None
 
@@ -377,7 +371,7 @@ def test_calculate_dist_k_and_l(freq_obs):
     # Cleanup - None
 
 
-def test_chi2_test(nb_digit):
+def test_chi2_test(digit_nb):
     """
     Test if Chisquare test for Benford law is correct.
     """
@@ -385,19 +379,19 @@ def test_chi2_test(nb_digit):
     correct_chi2 = [855.2809432704414, 935.0265195912425]
     correct_pval = [2.4902233696110595e-179, 3.453646369136125e-141]
     data_obs = np.random.choice(range(0, 1_000_000), size=2_000)
-    freq_ben = ben.get_theoretical_freq_benford(nb_digit, 10)
+    freq_ben = ben.get_theoretical_freq_benford(digit_nb, 10)
 
     # Exercise
-    current_chi2, current_pval = ben.chi2_test(data_obs, freq_ben, nb_digit)
+    current_chi2, current_pval = ben.chi2_test(data_obs, freq_ben, digit_nb)
 
     # Verify
-    assert_almost_equal(correct_chi2[nb_digit-1], current_chi2, 10)
-    assert_almost_equal(correct_pval[nb_digit-1], current_pval, 10)
+    assert_almost_equal(correct_chi2[digit_nb-1], current_chi2, 10)
+    assert_almost_equal(correct_pval[digit_nb-1], current_pval, 10)
 
     # Cleanup - None
 
 
-def test_g_test(nb_digit):
+def test_g_test(digit_nb):
     """
     Test if G-test for Benford law is correct.
     """
@@ -405,21 +399,50 @@ def test_g_test(nb_digit):
     correct_chi2 = [765.7703321705173, 873.6124001871107]
     correct_pval = [4.892679461548961e-160, 3.924980609988282e-129]
     data_obs = np.random.choice(range(0, 1_000_000), size=2_000)
-    freq_ben = ben.get_theoretical_freq_benford(nb_digit, 10)
+    freq_ben = ben.get_theoretical_freq_benford(digit_nb, 10)
 
     # Exercise
-    current_chi2, current_pval = ben.g_test(data_obs, freq_ben, nb_digit)
+    current_chi2, current_pval = ben.g_test(data_obs, freq_ben, digit_nb)
 
     # Verify
-    assert_almost_equal(correct_chi2[nb_digit-1], current_chi2, 10)
-    assert_almost_equal(correct_pval[nb_digit-1], current_pval, 10)
+    assert_almost_equal(correct_chi2[digit_nb-1], current_chi2, 10)
+    assert_almost_equal(correct_pval[digit_nb-1], current_pval, 10)
+
+    # Cleanup - None
+
+@pytest.fixture(params=[np.array([0.30, 0.18, 0.1, 0.12, 0.08,
+                                  0.07, 0.06, 0.05, 0.04]),
+                        np.array([0.12, 0.11, 0.11, 0.11, 0.11,
+                                  0.11, 0.11, 0.11, 0.11])])
+def freq_obs2(request):
+    """Return the array of observed proportions."""
+    return request.param
+
+
+def test_ks_test(freq_obs2):
+    """
+    Tesst if ks_test for Benford law is correct.
+    """
+    #Setup
+    correct_ks_val = [0.2620599913279623, 0.022059991327962325]
+    correct_crit_val = [0.04300697617828996, 0.04300697617828996]
+    freq_ben = ben.get_theoretical_freq_benford(digit_nb=1, base=10)
+
+    # Exercise
+    current_ks_val, current_crit_val = ben.ks_test(freq_obs2, freq_ben, 1000)
+
+    # Verify
+    assert_almost_equal(correct_ks_val[int(sum(freq_obs2))],
+                        current_ks_val, 10)
+    assert_almost_equal(correct_crit_val[int(sum(freq_obs2))],
+                        current_crit_val, 10)
 
     # Cleanup - None
 
 
-@pytest.mark.parametrize("nb_digit", [1, 2])
+@pytest.mark.parametrize("digit_nb", [1, 2])
 @pytest.mark.parametrize("test_type", [1, 0])
-def test_calculate_bootstrap_chi2(nb_digit, test_type):
+def test_calculate_bootstrap_chi2(digit_nb, test_type):
     """
     Test if Average of calculated chi2 and asociate p_value is correct.
     """
@@ -429,15 +452,34 @@ def test_calculate_bootstrap_chi2(nb_digit, test_type):
     correct_pval = [[5.912866885772256e-80, 8.960125311626065e-54],
                     [6.392416145101516e-85, 1.1066703236030742e-61]]
     data_obs = np.random.choice(range(0, 1_000_000), size=2_000)
-    freq_ben = ben.get_theoretical_freq_benford(nb_digit, 10)
+    freq_ben = ben.get_theoretical_freq_benford(digit_nb, 10)
 
     # Exercise
-    chi2, pval = ben.calculate_bootstrap_chi2(data_obs, freq_ben, nb_digit,
+    chi2, pval = ben.calculate_bootstrap_chi2(data_obs, freq_ben, digit_nb,
                                               type_test=test_type)
 
     # Verify
-    assert_almost_equal(correct_chi2[test_type][nb_digit-1], chi2, 10)
-    assert_almost_equal(correct_pval[test_type][nb_digit-1], pval, 10)
+    assert_almost_equal(correct_chi2[test_type][digit_nb-1], chi2, 10)
+    assert_almost_equal(correct_pval[test_type][digit_nb-1], pval, 10)
+
+    # Cleanup - None
+
+def test_calculate_bootstrap_ks(digit_nb):
+    """
+    Test if Average of calculated ks value is correct.
+    """
+    # Setup
+    correct_ks = [354.4254124294599, 532.5265521182702]
+    correct_crit_ks = [0, 0]
+    data_obs = np.random.choice(range(0, 1_000_000), size=2_000)
+    freq_ben = ben.get_theoretical_freq_benford(digit_nb, 10)
+
+    # Exercise
+    ks, crit_ks = ben.calculate_bootstrap_chi2(data_obs, freq_ben, digit_nb)
+
+    # Verify
+    assert_almost_equal(correct_ks[digit_nb-1], ks, 10)
+    assert_almost_equal(correct_crit_ks[digit_nb-1], crit_ks)
 
     # Cleanup - None
 
