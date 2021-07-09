@@ -470,7 +470,7 @@ def test_calculate_bootstrap_ks(digit_nb):
     """
     # Setup
     correct_ks = [354.4254124294599, 532.5265521182702]
-    correct_crit_ks = [0, 0]
+    correct_crit_ks = [1.02850282150919e-71, 2.1868584634807427e-64]
     data_obs = np.random.choice(range(0, 1_000_000), size=2_000)
     freq_ben = ben.get_theoretical_freq_benford(digit_nb, 10)
 
